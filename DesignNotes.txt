@@ -1,0 +1,43 @@
+So The idea here, for now, is to have three classes...
+A game class that people can inherit from
+A player class that people can inherit from (the game class and player class should be compatable, and should probably auto-check for compatability)
+A tornementFramework class that will load games and players and pit them against eachother
+
+Some Ideas
+Games and Players should automatically validate with eachother to make sure that they are playing the same game. (this probably means that the Torniment object will need to check a game name and a version from each of them)
+Moves contain no data about the move, only a number which is tied to a lambda in the object itself. This allows us to keep play legal very easily
+
+
+Game Class:
+Get Name
+Get Version
+get legal number of players
+Get Possible Advantages  //for supporting asymetric games
+get/set advantage        //set the advantage, it sets the basic board state
+generate legal moves
+Get Legal Moves -> array of move ids
+Make Move (a move ID)
+get Winner
+get Next Player ID
+set basic bord state
+print board State
+graphic board State
+
+================
+Player Class:
+get/set player ID
+get Name
+get/set pruning //maybe this feature should be put off a little
+get/set search depth
+get/set huristic  //this seems unessisary, we can probably just cover this with reimplementaitons, after all, the huristic is the ONLY thing that makes most of these child classes different
+get Best Move
+get bestMove recursion
+
+================
+Tornement Class:    //this one we will actually use raw, as opposed to spawning inheritors
+
+play game (game, array of players)
+     if players.size not in game.get
+  foreach players as player
+     
+    
