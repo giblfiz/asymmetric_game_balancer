@@ -1,70 +1,95 @@
 require 'game'
 
 class Player
-  @@number_players_instanciated
+  @@number_players_instanciated = 0
   @name
   @players_in_game
   @huristic
   @depth
   
-  attr_accessor :name, :players_in_game, 
+  attr_accessor :name, :players_in_game , :huristic
 
-  def initialize(depth = 1, player_name = nil, players_in_game = 2, huristic = :default)
-    @@number_players_instanciated +=1
+  def initialize(depth = 1, player_name = nil, players_in_game = 2, huristic = nil)
     @depth = depth.to_i
-    @name = player_name.nil? ? @@player_number : player_name #if player_name is nil set it to a instance number
+    @name = player_name.nil? ? @@number_players_instanciated : player_name #if player_name is nil set it to a instance number
     @players_in_game = players_in_game.to_i
-    @huristic = huristic
+    if !(huristic.nil?) then  
+      @huristic = huristic
+    else
+      @huristic = :winLose
+    end
+    @@number_players_instanciated +=1
   end
 
   ##This starts the recursive mini-max scoring mechanisim
-  def move(game)
-    if !game.is_a(Game)     
+  def move(game, huristic = nil)
+    huristic = huristic.nil? ? @huristic : huristic
+    if !game.is_a?(Game)     
       raise "move was given a #{Game.class} not a Game. which is not accptable in #{self.class}"
     end
-    best_move = getMoveRecursive(game, @depth)
+    legal_moves = game.legal_moves
+    
+    if legal_moves.none? then
+      return nil
+    end
+    
+    best_score = nil
+    best_move = nil
+    legal_moves.each do |move, move_key|
+      move_score = moveRecursive(game.clone.makeMove(move), @depth, huristic)
+      best_move  = best_score.nil? || best_score > move_score ? best_move : move
+      best_score = best_score.nil? || best_score > move_score ? best_score : move_score
+    end
     return best_move
   end
 
-  def getMoveRecursive(game, levels_remaining)
+  def moveRecursive(game, levels_remaining, huristic = nil)
+    huristic = huristic.nil? ? @huristic : huristic
+    p( "hurisitic val was #{huristic} default is #{@hurisitc}")
     legal_moves = game.legal_moves
     best_score = nil
     best_score_move = nil
+    
+    #if there are no legal moves left, then we should evaluate and return
+    if legal_moves.none? then
+      return self.send(huristic, game)
+    end
+
+    #otherwise we should figure out the score for each of the remaining moves
     legal_moves.each do |move, move_key|
-      newGame = game.clone
-      newGame.makeMove(move)
+      newGame = game.clone.makeMove(move)
       if levels_remaining < 1 then
-        score = self.huristic(newGame)
+        p "trying with a huristic value of #{huristic}" 
+        begin
+          score = self.send(huristic, newGame)
+        rescue TypeError => ex
+          p "There seems to have been a problem with #{huristic} of type #{ex}, soldiering on with value of 0"
+          score = 0
+        end
       else
-        score = self.getMoveRecursive(newGame, levels_remaining -= 1);
+        score = self.moveRecursive(newGame, levels_remaining -= 1, huristic);
       end
       if game.next_player_id == @name then
-        if score > best_score then
+        if best_score.nil? || score > best_score then
           best_score = score
-          best_score_move = move
         end
-      elsif game.next_player_id == @name then
-        if best < score_score then
+      elsif game.next_player_id != @name then
+        if best_score.nil? || score < best_score then
           best_score = score
-          best_score_move = move
         end
       end
     end
-    return levels_remaining < 1 ? move : score
+    return best_score
   end
   
-  ## this finds a value for a game state 
-  def huristic(game)
-    if !game.is_a(Game)     
-      raise "Huristic was given a #{Game.class} not a Game. which is not accptable in #{self.class}"
+  ## hopefully they will come up with a better huristic than than this, but it should always work if nessisary
+  def winLose(game)
+    if !game.is_a?(Game)     
+      raise "Huristic was given a #{game.class} not a Game. which is not accptable in #{self.class}"
     end
-  end    
-
-  ## hopefully this will be overridden, but will work as the most basic case
-  def defaultHuristic()
-    if Game.winner == @name
+    if game.winner == @name
       return 1
-    elsif Game.winner.nil?
+    elsif game.winner.nil?
       return 0
     else
       return -1

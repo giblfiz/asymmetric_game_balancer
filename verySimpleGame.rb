@@ -7,20 +7,20 @@ class VerySimpleGame < Game
   @@name = "Very Simple Game"
   @@version ="0.1"
 
-  def initialize
+  def initialize(bord)
     @legal_number_of_players = 2
     @advantage_list = []
     @next_player_id = 0
     @player_scores = {0 => 0 , 1 => 0};
-    setBord
+    setBord(bord)
     generateMoves
   end
 
   attr_accessor  :legal_number_of_players, :advantage_list, :next_player_id
 
-  def setBord
+  def setBord(bord = [ 4, 5, 6, 8] )
     #as a placeholder the bord will simply be an array
-    @bord = [ 4, 5, 6, 8];
+    @bord = bord
   end
 
   def generateMoves
@@ -57,7 +57,7 @@ class VerySimpleGame < Game
     else
       raise "the move #{moveId} does not exsist in #{@moves}" 
     end
-
+    return self
   end
 
   def legal_moves

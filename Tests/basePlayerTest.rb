@@ -18,7 +18,7 @@ class TC_BasePlayerTest < Test::Unit::TestCase
   end
 
   def test_get_move_recursive
-    assert(@myPlayer.respond_to?('getMovesRecursive'), "The Recursive get move is not accessable")
+    assert(@myPlayer.respond_to?('getMoveRecursive'), "The Recursive get move is not accessable")
   end
 
   def test_run_hurisitic
